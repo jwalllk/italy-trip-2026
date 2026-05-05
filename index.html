@@ -980,7 +980,7 @@ function openDoc(idx) {
   viewer.id = 'docViewer';
   viewer.innerHTML = `<div class="doc-viewer-header"><span class="doc-title">${doc.name}</span><button class="doc-close" onclick="closeDoc()">&times;</button></div><iframe src="${doc.file}"></iframe>`;
   document.body.appendChild(viewer);
-  closeSidebar();
+  toggleSidebar();
 }
 
 function closeDoc() {
