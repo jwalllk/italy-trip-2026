@@ -165,8 +165,8 @@ body { font-family: 'Segoe UI', Roboto, -apple-system, Arial, sans-serif; backgr
 .itin-day-item.itin-active { background: rgba(30,107,198,.06); border-left: 3px solid var(--accent); }
 .itin-day-num { font-weight: 600; font-size: 14px; color: var(--accent); min-width: 50px; }
 .itin-day-info { flex: 1; }
-.itin-day-loc { font-size: 12px; color: #777; display: block; margin-top: 2px; }
-.itin-day-sub { font-size: 14px; font-weight: 500; display: block; }
+.itin-day-loc { font-size: 14px; font-weight: 500; display: block; }
+.itin-day-sub { font-size: 12px; color: #777; display: block; margin-top: 2px; }
 
 /* ── Docs Page adjustments ── */
 .docs-page { padding: 16px; padding-bottom: 80px; max-width: 600px; margin: 0 auto; }
@@ -1059,7 +1059,7 @@ function renderItinPage() {
       for (const i of sec.days) {
         const d = days[i];
         const active = i === currentDay ? ' itin-active' : '';
-        html += '<div class="itin-day-item' + active + '" onclick="selectDayFromItin(' + i + ')"><span class="itin-day-num">Day ' + d.day + '</span><span class="itin-day-info"><span class="itin-day-sub">' + (d.sub || d.loc) + '</span><span class="itin-day-loc">' + (d.sub ? d.loc : '') + '</span></span></div>';
+        html += '<div class="itin-day-item' + active + '" onclick="selectDayFromItin(' + i + ')"><span class="itin-day-num">Day ' + d.day + '</span><span class="itin-day-info"><span class="itin-day-loc">' + d.loc + '</span><span class="itin-day-sub">' + (d.sub || '') + '</span></span></div>';
       }
     }
   }
