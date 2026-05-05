@@ -102,7 +102,7 @@ body { font-family: 'Segoe UI', Roboto, -apple-system, Arial, sans-serif; backgr
 
 /* ── Audio Player Bar ── */
 .audio-bar { position: fixed; bottom: -100px; left: 0; right: 0; background: var(--dark); padding: 12px 16px calc(var(--safe-bottom) + 12px); z-index: 200; transition: bottom .3s ease; box-shadow: 0 -2px 12px rgba(0,0,0,.3); }
-.audio-bar.visible { bottom: 0; }
+.audio-bar.visible { bottom: 56px; }
 .audio-bar .ab-title { font-family: 'Segoe UI', Roboto, -apple-system, Arial, sans-serif; font-size: 12px; color: rgba(255,255,255,.6); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .audio-bar .ab-controls { display: flex; align-items: center; gap: 12px; }
 .audio-bar .ab-btn { background: rgba(255,255,255,.15); border: none; color: #fff; font-size: 13px; cursor: pointer; padding: 0; width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
@@ -148,16 +148,40 @@ body { font-family: 'Segoe UI', Roboto, -apple-system, Arial, sans-serif; backgr
 .doc-page-item .doc-icon { font-size: 20px; }
 .doc-page-item .doc-name { font-size: 14px; flex: 1; }
 .docs-empty { padding: 12px 12px 12px 32px; font-size: 13px; color: #999; font-style: italic; }
+
+/* ── Bottom Tab Bar ── */
+.bottom-tabs { position: fixed; bottom: 0; left: 0; right: 0; display: flex; background: #fff; border-top: 1px solid var(--border); padding: 6px 0 calc(var(--safe-bottom) + 6px); z-index: 100; }
+.btab { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 3px; background: none; border: none; padding: 6px 4px; color: #999; font-size: 11px; font-family: 'Segoe UI', Roboto, -apple-system, Arial, sans-serif; cursor: pointer; transition: color .2s; }
+.btab.active { color: var(--accent); }
+.btab svg { width: 22px; height: 22px; }
+
+/* ── Itinerary Page ── */
+.itin-page { padding: 16px; padding-bottom: 80px; max-width: 600px; margin: 0 auto; }
+.itin-section-head { display: flex; align-items: center; gap: 10px; padding: 14px 12px; cursor: pointer; border-bottom: 1px solid var(--border); }
+.itin-section-head:active { background: rgba(0,0,0,.03); }
+.itin-section-name { font-weight: 600; font-size: 16px; flex: 1; }
+.itin-day-item { display: flex; align-items: center; gap: 12px; padding: 14px 12px 14px 32px; cursor: pointer; border-bottom: 1px solid var(--border); transition: background .15s; }
+.itin-day-item:active { background: rgba(0,0,0,.04); }
+.itin-day-item.itin-active { background: rgba(30,107,198,.06); border-left: 3px solid var(--accent); }
+.itin-day-num { font-weight: 600; font-size: 14px; color: var(--accent); min-width: 50px; }
+.itin-day-info { flex: 1; }
+.itin-day-loc { font-size: 14px; font-weight: 500; }
+.itin-day-sub { font-size: 12px; color: #777; margin-top: 2px; }
+
+/* ── Docs Page adjustments ── */
+.docs-page { padding: 16px; padding-bottom: 80px; max-width: 600px; margin: 0 auto; }
+.docs-page-header h2 { font-size: 20px; font-weight: 700; margin: 0; }
 </style>
 </head>
 <body>
 <div class="topbar">
-  <button class="hamburger" onclick="toggleSidebar()"><span></span><span></span><span></span></button>
   <h1>Walker Family Trip 2026</h1>
 </div>
-<div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
-<div class="sidebar" id="sidebar"></div>
 <div class="content" id="content"></div>
+<div class="bottom-tabs" id="bottomTabs">
+  <button class="btab active" id="btabItinerary" onclick="switchTab('itinerary')"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg><span>Itinerary</span></button>
+  <button class="btab" id="btabDocs" onclick="switchTab('docs')"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg><span>Documents</span></button>
+</div>
 <div class="audio-bar" id="audioBar">
   <div class="ab-title" id="abTitle"></div>
   <div class="ab-controls">
@@ -995,15 +1019,52 @@ const docSections = [
 const openDocSections = new Set();
 let docsViewOpen = false;
 
-function showDocsView() {
-  docsViewOpen = true;
-  toggleSidebar();
+let currentTab = 'itinerary';
+const openItinSections = new Set();
+
+function switchTab(tab) {
+  currentTab = tab;
+  docsViewOpen = (tab === 'docs');
+  if (tab === 'itinerary') { currentGuide = null; }
+  document.getElementById('btabItinerary').className = tab === 'itinerary' ? 'btab active' : 'btab';
+  document.getElementById('btabDocs').className = tab === 'docs' ? 'btab active' : 'btab';
+  if (tab === 'itinerary') { renderItinPage(); return; }
   renderContent();
 }
 
-function closeDocsView() {
+function toggleItinSection(name) {
+  if (openItinSections.has(name)) openItinSections.delete(name);
+  else openItinSections.add(name);
+  renderItinPage();
+}
+
+function selectDayFromItin(i) {
+  currentDay = i;
+  currentGuide = null;
+  currentAlt = false;
+  currentTab = 'itinerary';
   docsViewOpen = false;
+  document.getElementById('btabItinerary').className = 'btab active';
+  document.getElementById('btabDocs').className = 'btab';
   renderContent();
+}
+
+function renderItinPage() {
+  const el = document.getElementById('content');
+  let html = '<div class="itin-page">';
+  for (const sec of sections) {
+    const isOpen = openItinSections.has(sec.name);
+    html += '<div class="itin-section-head" onclick="toggleItinSection(\'' + sec.name.replace(/'/g, "\\'") + '\')"><span class="section-arrow">' + (isOpen ? '▾' : '▸') + '</span><span class="itin-section-name">' + sec.name + '</span></div>';
+    if (isOpen) {
+      for (const i of sec.days) {
+        const d = days[i];
+        const active = i === currentDay ? ' itin-active' : '';
+        html += '<div class="itin-day-item' + active + '" onclick="selectDayFromItin(' + i + ')"><span class="itin-day-num">Day ' + d.day + '</span><span class="itin-day-info"><span class="itin-day-loc">' + d.loc + '</span><span class="itin-day-sub">' + (d.sub || '') + '</span></span></div>';
+      }
+    }
+  }
+  html += '</div>';
+  el.innerHTML = html;
 }
 
 function toggleDocSection(name) {
@@ -1028,7 +1089,7 @@ function closeDoc() {
 
 function renderDocsPage() {
   const el = document.getElementById('content');
-  let html = '<div class="docs-page"><div class="docs-page-header"><button class="docs-back" onclick="closeDocsView()">← Back</button><h2>Documents</h2></div>';
+  let html = '<div class="docs-page"><div class="docs-page-header"><h2>Documents</h2></div>';
   for (let s = 0; s < docSections.length; s++) {
     const sec = docSections[s];
     const isOpen = openDocSections.has(sec.name);
@@ -1318,8 +1379,7 @@ const origCloseGuide = closeGuide;
 closeGuide = function() { closeAudio(); origCloseGuide(); };
 
 // ── INIT ──
-renderSidebar();
-renderContent();
+renderItinPage();
 </script>
 </body>
 </html>
