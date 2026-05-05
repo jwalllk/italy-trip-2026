@@ -1059,7 +1059,7 @@ function renderItinPage() {
       for (const i of sec.days) {
         const d = days[i];
         const active = i === currentDay ? ' itin-active' : '';
-        html += '<div class="itin-day-item' + active + '" onclick="selectDayFromItin(' + i + ')"><span class="itin-day-num">Day ' + d.day + '</span><span class="itin-day-info"><span class="itin-day-loc">' + d.loc + '</span><span class="itin-day-sub">' + (d.sub || '') + '</span></span></div>';
+        html += '<div class="itin-day-item' + active + '" onclick="selectDayFromItin(' + i + ')"><span class="itin-day-num">Day ' + d.day + '</span><span class="itin-day-loc">' + d.loc + '</span></div>';
       }
     }
   }
