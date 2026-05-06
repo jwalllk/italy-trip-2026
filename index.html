@@ -1119,6 +1119,7 @@ function toggleDocSection(name) {
 }
 
 function openSubDoc(secIdx, docIdx, childIdx) {
+  enableDocZoom();
   const doc = docSections[secIdx].docs[docIdx].children[childIdx];
   const viewer = document.createElement('div');
   viewer.className = 'doc-viewer';
@@ -1128,6 +1129,7 @@ function openSubDoc(secIdx, docIdx, childIdx) {
 }
 
 function openDoc(secIdx, docIdx) {
+  enableDocZoom();
   const doc = docSections[secIdx].docs[docIdx];
   const viewer = document.createElement('div');
   viewer.className = 'doc-viewer';
@@ -1139,6 +1141,11 @@ function openDoc(secIdx, docIdx) {
 function closeDoc() {
   const v = document.getElementById('docViewer');
   if (v) v.remove();
+  document.querySelector('meta[name="viewport"]').content = 'width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no';
+}
+
+function enableDocZoom() {
+  document.querySelector('meta[name="viewport"]').content = 'width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=yes, maximum-scale=5.0';
 }
 
 function renderDocsPage() {
