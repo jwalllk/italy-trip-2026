@@ -158,9 +158,11 @@ body { font-family: 'Segoe UI', Roboto, -apple-system, Arial, sans-serif; backgr
 
 /* ── Itinerary Page ── */
 .itin-page { padding: 16px; padding-bottom: 80px; max-width: 600px; margin: 0 auto; }
-.itin-section-head { display: flex; align-items: center; gap: 10px; padding: 14px 12px; cursor: pointer; border-bottom: 1px solid var(--border); }
+.itin-section-head { display: flex; align-items: center; justify-content: space-between; padding: 14px 16px; cursor: pointer; border-bottom: 1px solid var(--border); }
 .itin-section-head:active { background: rgba(0,0,0,.03); }
 .itin-section-name { font-weight: 600; font-size: 16px; flex: 1; }
+.itin-chevron { font-size: 12px; color: #999; transition: transform .25s ease; }
+.itin-chevron.open { transform: rotate(180deg); }
 .itin-day-item { display: flex; align-items: center; gap: 12px; padding: 14px 12px 14px 32px; cursor: pointer; border-bottom: 1px solid var(--border); transition: background .15s; }
 .itin-day-item:active { background: rgba(0,0,0,.04); }
 .itin-day-item.itin-active { background: rgba(30,107,198,.06); border-left: 3px solid var(--accent); }
@@ -1102,7 +1104,7 @@ function renderItinPage() {
   let html = '<div class="itin-page">';
   for (const sec of sections) {
     const isOpen = openItinSections.has(sec.name);
-    html += '<div class="itin-section-head" onclick="toggleItinSection(\'' + sec.name.replace(/'/g, "\\'") + '\')"><span class="section-arrow">' + (isOpen ? '▾' : '▸') + '</span><span class="itin-section-name">' + sec.name + '</span></div>';
+    html += '<div class="itin-section-head" onclick="toggleItinSection(\'' + sec.name.replace(/'/g, "\\'") + '\')"><span class="itin-section-name">' + sec.name + '</span><span class="itin-chevron' + (isOpen ? ' open' : '') + '">&#9660;</span></div>';
     if (isOpen) {
       for (const i of sec.days) {
         const d = days[i];
