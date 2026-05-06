@@ -151,8 +151,7 @@ body { font-family: 'Segoe UI', Roboto, -apple-system, Arial, sans-serif; backgr
 .docs-empty { padding: 12px 12px 12px 32px; font-size: 13px; color: #999; font-style: italic; }
 
 /* ── Bottom Tab Bar ── */
-.bottom-tabs { position: fixed; bottom: 0; left: 0; right: 0; display: flex; background: #fff; border-top: 1px solid var(--border); padding: 6px 0 calc(env(safe-area-inset-bottom, 0px) + 6px); z-index: 100; }
-.bottom-tabs::after { content: ''; position: fixed; bottom: 0; left: 0; right: 0; height: env(safe-area-inset-bottom, 0px); background: #fff; z-index: 100; }
+.bottom-tabs { position: fixed; bottom: 0; left: 0; right: 0; display: flex; background: #fff; border-top: 1px solid var(--border); padding: 6px 0 calc(env(safe-area-inset-bottom, 0px) + 40px); z-index: 100; }
 .btab { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 3px; background: none; border: none; padding: 6px 4px; color: #999; font-size: 11px; font-family: 'Segoe UI', Roboto, -apple-system, Arial, sans-serif; cursor: pointer; transition: color .2s; }
 .btab.active { color: var(--accent); }
 .btab svg { width: 22px; height: 22px; }
