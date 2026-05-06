@@ -175,6 +175,9 @@ body { font-family: 'Segoe UI', Roboto, -apple-system, Arial, sans-serif; backgr
 
 /* ── Bottom safe area fill ── */
 .bottom-fill { position: fixed; bottom: -50px; left: 0; right: 0; height: 100px; background: var(--accent); z-index: 99; }
+
+.doc-sub-item { padding-left: 52px !important; }
+.doc-group .docs-section-count { font-size: 12px; color: #999; margin-left: auto; }
 </style>
 </head>
 <body>
@@ -1029,8 +1032,22 @@ const docSections = [
     {name: "Pompeii Tickets", file: "docs/Pompeii Tickets.pdf"},
     {name: "Positano, Amalfi, Ravello Tour", file: "docs/Positano, Amalfi, Ravello Tour.pdf"},
     {name: "Sorrento Airbnb Confirmation", file: "docs/Sorrento Airbnb Confirmation.pdf"},
-    {name: "Train - Pompei to Salerno (6 tickets)", file: "docs/Jaron-Walker-2777267012.pdf"},
-    {name: "Train - Salerno to Naples (6 tickets)", file: "docs/Jaron-Walker-2777267432.pdf"}
+    {name: "Train - Pompei to Salerno", children: [
+      {name: "Jaron Walker", file: "docs/Jaron-Walker-2777267012.pdf"},
+      {name: "Natalie Summerhays", file: "docs/Natalie-Summerhays-2777267009.pdf"},
+      {name: "Jonathan Summerhays", file: "docs/Jonathan-Summerhays-2777267011.pdf"},
+      {name: "Brielle Summerhays", file: "docs/Brielle-Summerhays-2777267013.pdf"},
+      {name: "Jade Summerhays", file: "docs/Jade-Summerhays-2777267014.pdf"},
+      {name: "Taegan Summerhays", file: "docs/Taegan-Summerhays-2777267007.pdf"}
+    ]},
+    {name: "Train - Salerno to Naples", children: [
+      {name: "Jaron Walker", file: "docs/Jaron-Walker-2777267432.pdf"},
+      {name: "Natalie Summerhays", file: "docs/Natalie-Summerhays-2777267429.pdf"},
+      {name: "Jonathan Summerhays", file: "docs/Jonathan-Summerhays-2777267431.pdf"},
+      {name: "Brielle Summerhays", file: "docs/Brielle-Summerhays-2777267433.pdf"},
+      {name: "Jade Summerhays", file: "docs/Jade-Summerhays-2777267434.pdf"},
+      {name: "Taegan Summerhays", file: "docs/Taegan-Summerhays-2777267427.pdf"}
+    ]}
   ]},
   {name: "Sicily", docs: [
     {name: "Catania Airbnb Confirmation", file: "docs/Catania Airbnb Confirmation.pdf"},
@@ -1101,6 +1118,15 @@ function toggleDocSection(name) {
   renderDocsPage();
 }
 
+function openSubDoc(secIdx, docIdx, childIdx) {
+  const doc = docSections[secIdx].docs[docIdx].children[childIdx];
+  const viewer = document.createElement('div');
+  viewer.className = 'doc-viewer';
+  viewer.id = 'docViewer';
+  viewer.innerHTML = `<div class="doc-viewer-header"><span class="doc-title">${doc.name}</span><button class="doc-close" onclick="closeDoc()">&times;</button></div><iframe src="${doc.file}#zoom=page-width" style="width:100%;flex:1;border:none;"></iframe>`;
+  document.body.appendChild(viewer);
+}
+
 function openDoc(secIdx, docIdx) {
   const doc = docSections[secIdx].docs[docIdx];
   const viewer = document.createElement('div');
@@ -1125,7 +1151,18 @@ function renderDocsPage() {
     html += `<div class="docs-section-head" onclick="toggleDocSection('${sec.name}')"><span class="section-arrow">${isOpen ? '▾' : '▸'}</span><span class="docs-section-name">${sec.name}</span><span class="docs-section-count">${count} doc${count !== 1 ? 's' : ''}</span></div>`;
     if (isOpen && sec.docs.length > 0) {
       for (let d = 0; d < sec.docs.length; d++) {
-        html += `<div class="doc-page-item" onclick="openDoc(${s},${d})"><span class="doc-icon">📄</span><span class="doc-name">${sec.docs[d].name}</span></div>`;
+        const doc = sec.docs[d];
+        if (doc.children) {
+          const subOpen = openDocSections.has(sec.name + ':' + doc.name);
+          html += '<div class="doc-page-item doc-group" onclick="toggleDocSection(\'' + sec.name + ':' + doc.name + '\')"><span class="doc-icon">📁</span><span class="doc-name">' + doc.name + '</span><span class="docs-section-count">' + doc.children.length + '</span></div>';
+          if (subOpen) {
+            for (let k = 0; k < doc.children.length; k++) {
+              html += '<div class="doc-page-item doc-sub-item" onclick="openSubDoc(' + s + ',' + d + ',' + k + ')"><span class="doc-icon">📄</span><span class="doc-name">' + doc.children[k].name + '</span></div>';
+            }
+          }
+        } else {
+          html += '<div class="doc-page-item" onclick="openDoc(' + s + ',' + d + ')"><span class="doc-icon">📄</span><span class="doc-name">' + doc.name + '</span></div>';
+        }
       }
     }
     if (isOpen && sec.docs.length === 0) {
