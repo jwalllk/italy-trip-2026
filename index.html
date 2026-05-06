@@ -22,7 +22,7 @@
   --safe-bottom: env(safe-area-inset-bottom, 0px);
 }
 * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-html { background: var(--accent); height: 100%; min-height: 100vh; min-height: -webkit-fill-available; }
+html, body::after { background: var(--accent); } html { height: 100%; min-height: 100vh; min-height: -webkit-fill-available; }
 body { font-family: 'Segoe UI', Roboto, -apple-system, Arial, sans-serif; background: var(--bg); color: var(--text); overflow: hidden; height: 100dvh; display: flex; flex-direction: column; }
 
 /* ── Top bar ── */
@@ -151,7 +151,7 @@ body { font-family: 'Segoe UI', Roboto, -apple-system, Arial, sans-serif; backgr
 .docs-empty { padding: 12px 12px 12px 32px; font-size: 13px; color: #999; font-style: italic; }
 
 /* ── Bottom Tab Bar ── */
-.bottom-tabs { position: fixed; bottom: 0; left: 0; right: 0; display: flex; background: #fff; border-top: 1px solid var(--border); padding: 6px 0 calc(env(safe-area-inset-bottom, 0px) + 40px); z-index: 100; }
+.bottom-tabs { position: fixed; bottom: 0; left: 0; right: 0; display: flex; background: #fff; border-top: 1px solid var(--border); padding: 6px 0 calc(env(safe-area-inset-bottom, 0px) + 6px); z-index: 100; }
 .btab { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 3px; background: none; border: none; padding: 6px 4px; color: #999; font-size: 11px; font-family: 'Segoe UI', Roboto, -apple-system, Arial, sans-serif; cursor: pointer; transition: color .2s; }
 .btab.active { color: var(--accent); }
 .btab svg { width: 22px; height: 22px; }
@@ -172,6 +172,9 @@ body { font-family: 'Segoe UI', Roboto, -apple-system, Arial, sans-serif; backgr
 /* ── Docs Page adjustments ── */
 .docs-page { padding: 16px; padding-bottom: 80px; max-width: 600px; margin: 0 auto; }
 .docs-page-header h2 { font-size: 20px; font-weight: 700; margin: 0; }
+
+/* ── Bottom safe area fill ── */
+.bottom-fill { position: fixed; bottom: -50px; left: 0; right: 0; height: 100px; background: var(--accent); z-index: 99; }
 </style>
 </head>
 <body>
@@ -183,6 +186,7 @@ body { font-family: 'Segoe UI', Roboto, -apple-system, Arial, sans-serif; backgr
   <button class="btab active" id="btabItinerary" onclick="switchTab('itinerary')"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg><span>Itinerary</span></button>
   <button class="btab" id="btabDocs" onclick="switchTab('docs')"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg><span>Documents</span></button>
 </div>
+<div class="bottom-fill"></div>
 <div class="audio-bar" id="audioBar">
   <div class="ab-title" id="abTitle"></div>
   <div class="ab-controls">
