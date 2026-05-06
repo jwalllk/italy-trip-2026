@@ -1446,6 +1446,54 @@ closeGuide = function() { closeAudio(); origCloseGuide(); };
 
 // ── INIT ──
 renderItinPage();
+
+// ── Swipe navigation between days ──
+(function() {
+  let touchStartX = 0, touchStartY = 0, touchEndX = 0, touchEndY = 0;
+  const content = document.getElementById('content');
+  
+  content.addEventListener('touchstart', function(e) {
+    touchStartX = e.changedTouches[0].screenX;
+    touchStartY = e.changedTouches[0].screenY;
+  }, {passive: true});
+  
+  content.addEventListener('touchend', function(e) {
+    touchEndX = e.changedTouches[0].screenX;
+    touchEndY = e.changedTouches[0].screenY;
+    handleSwipe();
+  }, {passive: true});
+  
+  function handleSwipe() {
+    // Only handle swipes on day pages (not docs, not itinerary list)
+    if (docsViewOpen || currentTab !== 'itinerary') return;
+    // Check if we're on a day page (not the itinerary list)
+    const el = document.getElementById('content');
+    if (el.querySelector('.itin-page')) return;
+    
+    const dx = touchEndX - touchStartX;
+    const dy = touchEndY - touchStartY;
+    
+    // Must be primarily horizontal and long enough
+    if (Math.abs(dx) < 80 || Math.abs(dy) > Math.abs(dx)) return;
+    
+    if (dx < 0 && currentDay < days.length - 1) {
+      // Swipe left → next day
+      currentDay++;
+      currentGuide = null;
+      currentAlt = false;
+      renderContent();
+      window.scrollTo(0, 0);
+    } else if (dx > 0 && currentDay > 0) {
+      // Swipe right → previous day
+      currentDay--;
+      currentGuide = null;
+      currentAlt = false;
+      renderContent();
+      window.scrollTo(0, 0);
+    }
+  }
+})();
+
 </script>
 </body>
 </html>
