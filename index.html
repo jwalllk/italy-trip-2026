@@ -1059,7 +1059,8 @@ function renderItinPage() {
       for (const i of sec.days) {
         const d = days[i];
         const active = i === currentDay ? ' itin-active' : '';
-        html += '<div class="itin-day-item' + active + '" onclick="selectDayFromItin(' + i + ')"><span class="itin-day-num">Day ' + d.day + '</span><span class="itin-day-loc">' + (d.sub || d.loc) + '</span></div>';
+        var parts = d.date.split(', '); var dp = parts[1] ? parts[1].split(' ') : ['','']; var months = {Jan:'1',Feb:'2',Mar:'3',Apr:'4',May:'5',Jun:'6',Jul:'7',Aug:'8',Sep:'9',Oct:'10',Nov:'11',Dec:'12'}; var dateStr = (months[dp[0]]||'') + '/' + (parseInt(dp[1])||'');
+        html += '<div class="itin-day-item' + active + '" onclick="selectDayFromItin(' + i + ')"><span class="itin-day-num">Day ' + d.day + ' - ' + dateStr + '</span><span class="itin-day-loc">' + (d.sub || d.loc) + '</span></div>';
       }
     }
   }
