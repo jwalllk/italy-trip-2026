@@ -1136,6 +1136,7 @@ function showDocViewer(name, file) {
     return;
   }
   // In-app viewer for PWA mode
+  document.querySelector('meta[name="viewport"]').setAttribute('content', 'width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=yes, maximum-scale=5.0');
   var existing = document.getElementById('docViewer');
   if (existing) existing.remove();
   var div = document.createElement('div');
@@ -1159,6 +1160,7 @@ function openDoc(secIdx, docIdx) {
 function closeDoc() {
   const v = document.getElementById('docViewer');
   if (v) v.remove();
+  document.querySelector('meta[name="viewport"]').setAttribute('content', 'width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no');
 }
 
 function renderDocsPage() {
