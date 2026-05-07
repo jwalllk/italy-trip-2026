@@ -50,13 +50,18 @@ body { font-family: 'Segoe UI', Roboto, -apple-system, Arial, sans-serif; backgr
 .section-arrow { font-size: 10px; color: rgba(255,255,255,.6); min-width: 12px; }
 
 /* ── Content area ── */
-.content { flex: 1; overflow-y: auto; overflow-x: hidden; -webkit-overflow-scrolling: touch; padding-bottom: calc(70px + env(safe-area-inset-bottom, 0px)); }
+.content { flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; padding-bottom: calc(70px + env(safe-area-inset-bottom, 0px)); }
 
 /* ── Day header area gradient ── */
 .header-wrap { background: linear-gradient(to bottom, rgba(21,96,130,.28) 0%, rgba(21,96,130,.12) 50%, rgba(21,96,130,.03) 100%); }
 
 /* ── Day header ── */
 .day-header { padding: 20px 20px 12px; border-bottom: 2px solid var(--accent); margin: 0 16px; }
+.day-nav { display: flex; align-items: center; justify-content: space-between; padding: 0 8px; }
+.day-nav-arrow { background: none; border: none; font-size: 22px; color: var(--accent); padding: 8px 12px; cursor: pointer; opacity: 0.9; }
+.day-nav-arrow:active { opacity: 0.5; }
+.day-nav-arrow.invisible { visibility: hidden; }
+.day-nav-center { text-align: center; flex: 1; }
 .day-header .date { font-family: 'Segoe UI', Roboto, -apple-system, Arial, sans-serif; font-size: 13px; color: var(--text-light); letter-spacing: 0.5px; }
 .day-header .location { font-size: 26px; font-weight: 700; color: var(--text); margin-top: 2px; }
 .day-header .subtitle { font-size: 14px; color: var(--text-light); font-style: italic; margin-top: 4px; }
@@ -1284,7 +1289,7 @@ function renderContent() {
   if (currentGuide && guides[currentGuide]) {
     // ── GUIDE VIEW ──
     const g = guides[currentGuide];
-    let html = `<div class="header-wrap"><div class="day-header"><div class="date">${d.date} • Day ${d.day}</div><div class="location">${d.loc}</div>`;
+    let html = `<div class="header-wrap"><div class="day-header"><div class="day-nav"><button class="day-nav-arrow${currentDay === 0 ? ' invisible' : ''}" onclick="goDay(-1)">‹</button><div class="day-nav-center"><div class="date">${d.date} • Day ${d.day}</div><div class="location">${d.loc}</div></div><button class="day-nav-arrow${currentDay >= days.length - 1 ? ' invisible' : ''}" onclick="goDay(1)">›</button></div>`;
     if (d.sub) html += `<div class="subtitle">${d.sub}</div>`;
     html += `</div>`;
     html += buildSiteTabs();
@@ -1316,7 +1321,7 @@ function renderContent() {
   // ── TIMELINE VIEW ──
   const items = currentAlt && d.alt ? d.alt.items : d.items;
 
-  let html = `<div class="header-wrap"><div class="day-header"><div class="date">${d.date} • Day ${d.day}</div><div class="location">${d.loc}</div>`;
+  let html = `<div class="header-wrap"><div class="day-header"><div class="day-nav"><button class="day-nav-arrow${currentDay === 0 ? ' invisible' : ''}" onclick="goDay(-1)">‹</button><div class="day-nav-center"><div class="date">${d.date} • Day ${d.day}</div><div class="location">${d.loc}</div></div><button class="day-nav-arrow${currentDay >= days.length - 1 ? ' invisible' : ''}" onclick="goDay(1)">›</button></div>`;
   if (d.sub) html += `<div class="subtitle">${d.sub}</div>`;
   html += `</div>`;
 
@@ -1468,78 +1473,18 @@ closeGuide = function() { closeAudio(); origCloseGuide(); };
 // ── INIT ──
 renderItinPage();
 
-// ── Swipe navigation between days (slide animation) ──
-(function() {
-  let startX = 0, startY = 0, tracking = false, locked = false, dx = 0;
-  const cont = document.getElementById('content');
 
-  cont.addEventListener('touchstart', function(e) {
-    if (docsViewOpen || currentTab !== 'itinerary') return;
-    if (cont.querySelector('.itin-page')) return;
-    // Don't track swipes that start on the site-tabs (guide buttons)
-    if (e.target.closest('.site-tabs')) return;
-    startX = e.changedTouches[0].clientX;
-    startY = e.changedTouches[0].clientY;
-    tracking = true; locked = false; dx = 0;
-    cont.style.transition = 'none';
-  }, {passive: true});
 
-  cont.addEventListener('touchmove', function(e) {
-    if (!tracking) return;
-    var cx = e.changedTouches[0].clientX;
-    var cy = e.changedTouches[0].clientY;
-    if (!locked) {
-      // Determine if horizontal or vertical
-      if (Math.abs(cx - startX) > 10 || Math.abs(cy - startY) > 10) {
-        if (Math.abs(cy - startY) > Math.abs(cx - startX)) { tracking = false; return; }
-        locked = true;
-      } else { return; }
-    }
-    dx = cx - startX;
-    // Resist at edges
-    if ((dx > 0 && currentDay === 0) || (dx < 0 && currentDay >= days.length - 1)) dx *= 0.3;
-    cont.style.transform = 'translateX(' + dx + 'px)';
-  }, {passive: true});
 
-  cont.addEventListener('touchend', function(e) {
-    if (!tracking && !locked) return;
-    tracking = false;
-    var w = cont.offsetWidth;
-    var threshold = w * 0.25;
-    cont.style.transition = 'transform .25s ease';
-    if (dx < -threshold && currentDay < days.length - 1) {
-      // Slide out left, load next, slide in from right
-      cont.style.transform = 'translateX(' + (-w) + 'px)';
-      setTimeout(function() {
-        currentDay++; currentGuide = null; currentAlt = false;
-        renderContent(); window.scrollTo(0, 0);
-        cont.style.transition = 'none';
-        cont.style.transform = 'translateX(' + w + 'px)';
-        requestAnimationFrame(function() {
-          cont.style.transition = 'transform .25s ease';
-          cont.style.transform = 'translateX(0)';
-        });
-      }, 250);
-    } else if (dx > threshold && currentDay > 0) {
-      // Slide out right, load prev, slide in from left
-      cont.style.transform = 'translateX(' + w + 'px)';
-      setTimeout(function() {
-        currentDay--; currentGuide = null; currentAlt = false;
-        renderContent(); window.scrollTo(0, 0);
-        cont.style.transition = 'none';
-        cont.style.transform = 'translateX(' + (-w) + 'px)';
-        requestAnimationFrame(function() {
-          cont.style.transition = 'transform .25s ease';
-          cont.style.transform = 'translateX(0)';
-        });
-      }, 250);
-    } else {
-      // Snap back
-      cont.style.transform = 'translateX(0)';
-    }
-  }, {passive: true});
-})();
-
+function goDay(dir) {
+  var next = currentDay + dir;
+  if (next < 0 || next >= days.length) return;
+  currentDay = next;
+  currentGuide = null;
+  currentAlt = false;
+  renderContent();
+  window.scrollTo(0, 0);
+}
 </script>
 </body>
 </html>
