@@ -221,6 +221,7 @@ body { font-family: 'Segoe UI', Roboto, -apple-system, Arial, sans-serif; backgr
 <div id="errbox" style="display:none;position:fixed;bottom:0;left:0;right:0;background:#fee;color:#900;font-family:monospace;font-size:12px;padding:12px;max-height:40vh;overflow:auto;z-index:999;"></div>
 <script>
 window.onerror = function(msg, src, line, col, err) {
+  if (msg === 'Script error.' || line === 0) return true;
   var box = document.getElementById('errbox');
   box.style.display = 'block';
   box.innerHTML += '<b>Line ' + line + ':</b> ' + msg + '<br>';
