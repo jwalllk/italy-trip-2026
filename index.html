@@ -50,7 +50,7 @@ body { font-family: 'Segoe UI', Roboto, -apple-system, Arial, sans-serif; backgr
 .section-arrow { font-size: 10px; color: rgba(255,255,255,.6); min-width: 12px; }
 
 /* ── Content area ── */
-.content { flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; padding-bottom: var(--safe-bottom); }
+.content { flex: 1; overflow-y: auto; overflow-x: hidden; -webkit-overflow-scrolling: touch; padding-bottom: calc(70px + env(safe-area-inset-bottom, 0px)); }
 
 /* ── Day header area gradient ── */
 .header-wrap { background: linear-gradient(to bottom, rgba(21,96,130,.28) 0%, rgba(21,96,130,.12) 50%, rgba(21,96,130,.03) 100%); }
@@ -131,7 +131,7 @@ body { font-family: 'Segoe UI', Roboto, -apple-system, Arial, sans-serif; backgr
 .doc-viewer-header { display: flex; align-items: center; gap: 12px; padding: 12px 16px; background: var(--card); border-bottom: 1px solid var(--border); flex-shrink: 0; min-height: 48px; z-index: 201; }
 .doc-viewer-header .doc-title { flex: 1; font-weight: 600; font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .doc-viewer-header .doc-close { width: 40px; height: 40px; min-width: 40px; border-radius: 50%; border: none; background: #f0f0f0; font-size: 22px; cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-.doc-viewer iframe { flex: 1; border: none; width: 100%; max-height: calc(100dvh - env(safe-area-inset-top, 0px) - 48px); overflow: auto; -webkit-overflow-scrolling: touch; }
+.doc-viewer iframe { flex: 1; border: none; width: 100%; overflow: auto; -webkit-overflow-scrolling: touch; }
 
 
 /* ── Documents Page ── */
@@ -157,7 +157,7 @@ body { font-family: 'Segoe UI', Roboto, -apple-system, Arial, sans-serif; backgr
 .btab svg { width: 22px; height: 22px; }
 
 /* ── Itinerary Page ── */
-.itin-page { padding: 16px; padding-bottom: 80px; max-width: 600px; margin: 0 auto; }
+.itin-page { padding: 16px; padding-bottom: 20px; max-width: 600px; margin: 0 auto; }
 .itin-section-head { display: flex; align-items: center; justify-content: space-between; padding: 14px 16px; cursor: pointer; border-bottom: 1px solid var(--border); }
 .itin-section-head:active { background: rgba(0,0,0,.03); }
 .itin-section-name { font-weight: 600; font-size: 16px; flex: 1; }
@@ -172,7 +172,7 @@ body { font-family: 'Segoe UI', Roboto, -apple-system, Arial, sans-serif; backgr
 .itin-day-sub { font-size: 12px; color: #777; display: block; margin-top: 2px; }
 
 /* ── Docs Page adjustments ── */
-.docs-page { padding: 16px; padding-bottom: 80px; max-width: 600px; margin: 0 auto; }
+.docs-page { padding: 16px; padding-bottom: 20px; max-width: 600px; margin: 0 auto; }
 .docs-page-header h2 { font-size: 20px; font-weight: 700; margin: 0; }
 
 /* ── Bottom safe area fill ── */
@@ -1468,51 +1468,76 @@ closeGuide = function() { closeAudio(); origCloseGuide(); };
 // ── INIT ──
 renderItinPage();
 
-// ── Swipe navigation between days ──
+// ── Swipe navigation between days (slide animation) ──
 (function() {
-  let touchStartX = 0, touchStartY = 0, touchEndX = 0, touchEndY = 0;
-  const content = document.getElementById('content');
-  
-  content.addEventListener('touchstart', function(e) {
-    touchStartX = e.changedTouches[0].screenX;
-    touchStartY = e.changedTouches[0].screenY;
-  }, {passive: true});
-  
-  content.addEventListener('touchend', function(e) {
-    touchEndX = e.changedTouches[0].screenX;
-    touchEndY = e.changedTouches[0].screenY;
-    handleSwipe();
-  }, {passive: true});
-  
-  function handleSwipe() {
-    // Only handle swipes on day pages (not docs, not itinerary list)
+  let startX = 0, startY = 0, tracking = false, locked = false, dx = 0;
+  const cont = document.getElementById('content');
+
+  cont.addEventListener('touchstart', function(e) {
     if (docsViewOpen || currentTab !== 'itinerary') return;
-    // Check if we're on a day page (not the itinerary list)
-    const el = document.getElementById('content');
-    if (el.querySelector('.itin-page')) return;
-    
-    const dx = touchEndX - touchStartX;
-    const dy = touchEndY - touchStartY;
-    
-    // Must be primarily horizontal and long enough
-    if (Math.abs(dx) < 80 || Math.abs(dy) > Math.abs(dx)) return;
-    
-    if (dx < 0 && currentDay < days.length - 1) {
-      // Swipe left → next day
-      currentDay++;
-      currentGuide = null;
-      currentAlt = false;
-      renderContent();
-      window.scrollTo(0, 0);
-    } else if (dx > 0 && currentDay > 0) {
-      // Swipe right → previous day
-      currentDay--;
-      currentGuide = null;
-      currentAlt = false;
-      renderContent();
-      window.scrollTo(0, 0);
+    if (cont.querySelector('.itin-page')) return;
+    // Don't track swipes that start on the site-tabs (guide buttons)
+    if (e.target.closest('.site-tabs')) return;
+    startX = e.changedTouches[0].clientX;
+    startY = e.changedTouches[0].clientY;
+    tracking = true; locked = false; dx = 0;
+    cont.style.transition = 'none';
+  }, {passive: true});
+
+  cont.addEventListener('touchmove', function(e) {
+    if (!tracking) return;
+    var cx = e.changedTouches[0].clientX;
+    var cy = e.changedTouches[0].clientY;
+    if (!locked) {
+      // Determine if horizontal or vertical
+      if (Math.abs(cx - startX) > 10 || Math.abs(cy - startY) > 10) {
+        if (Math.abs(cy - startY) > Math.abs(cx - startX)) { tracking = false; return; }
+        locked = true;
+      } else { return; }
     }
-  }
+    dx = cx - startX;
+    // Resist at edges
+    if ((dx > 0 && currentDay === 0) || (dx < 0 && currentDay >= days.length - 1)) dx *= 0.3;
+    cont.style.transform = 'translateX(' + dx + 'px)';
+  }, {passive: true});
+
+  cont.addEventListener('touchend', function(e) {
+    if (!tracking && !locked) return;
+    tracking = false;
+    var w = cont.offsetWidth;
+    var threshold = w * 0.25;
+    cont.style.transition = 'transform .25s ease';
+    if (dx < -threshold && currentDay < days.length - 1) {
+      // Slide out left, load next, slide in from right
+      cont.style.transform = 'translateX(' + (-w) + 'px)';
+      setTimeout(function() {
+        currentDay++; currentGuide = null; currentAlt = false;
+        renderContent(); window.scrollTo(0, 0);
+        cont.style.transition = 'none';
+        cont.style.transform = 'translateX(' + w + 'px)';
+        requestAnimationFrame(function() {
+          cont.style.transition = 'transform .25s ease';
+          cont.style.transform = 'translateX(0)';
+        });
+      }, 250);
+    } else if (dx > threshold && currentDay > 0) {
+      // Slide out right, load prev, slide in from left
+      cont.style.transform = 'translateX(' + w + 'px)';
+      setTimeout(function() {
+        currentDay--; currentGuide = null; currentAlt = false;
+        renderContent(); window.scrollTo(0, 0);
+        cont.style.transition = 'none';
+        cont.style.transform = 'translateX(' + (-w) + 'px)';
+        requestAnimationFrame(function() {
+          cont.style.transition = 'transform .25s ease';
+          cont.style.transform = 'translateX(0)';
+        });
+      }, 250);
+    } else {
+      // Snap back
+      cont.style.transform = 'translateX(0)';
+    }
+  }, {passive: true});
 })();
 
 </script>
