@@ -1140,10 +1140,12 @@ function showDocViewer(name, file) {
     window.open(file, '_blank');
     return;
   }
-  // In-app viewer for PWA mode
+  // In-app viewer for PWA mode — use Google Docs viewer to render all pages
   document.querySelector('meta[name="viewport"]').setAttribute('content', 'width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=yes, maximum-scale=5.0');
   var existing = document.getElementById('docViewer');
   if (existing) existing.remove();
+  var fullUrl = new URL(file, window.location.href).href;
+  var viewerUrl = 'https://docs.google.com/gview?url=' + encodeURIComponent(fullUrl) + '&embedded=true';
   var div = document.createElement('div');
   div.id = 'docViewer';
   div.className = 'doc-viewer';
@@ -1152,7 +1154,7 @@ function showDocViewer(name, file) {
     '<svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 4l-6 6 6 6"/></svg>' +
     '</button>' +
     '<span class="doc-title">' + name + '</span></div>' +
-    '<iframe src="' + file + '#toolbar=0" allow="fullscreen"></iframe>';
+    '<iframe src="' + viewerUrl + '" allow="fullscreen" style="flex:1;border:none;width:100%;"></iframe>';
   document.body.appendChild(div);
 }
 
